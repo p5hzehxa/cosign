@@ -31,6 +31,7 @@ func Bundle() *cobra.Command {
 	}
 
 	cmd.AddCommand(bundleCreate())
+	cmd.AddCommand(bundleUpgrade())
 
 	return cmd
 }
@@ -62,6 +63,31 @@ func bundleCreate() *cobra.Command {
 			defer cancel()
 
 			return bundleCreateCmd.Exec(ctx)
+		},
+	}
+
+	o.AddFlags(cmd)
+	return cmd
+}
+
+func bundleUpgrade() *cobra.Command {
+	o := &options.BundleUpgradeOptions{}
+
+	cmd := &cobra.Command{
+		Use:   "upgrade <bundle>",
+		Short: "Upgrade a Sigstore protobuf bundle",
+		Long:  "Upgrade a Sigstore Protobuf bundle to the latest version. This command only supports standardized bundles.",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			bundleUpgradeCmd := &bundle.UpgradeCmd{
+				Out:      o.Out,
+				RekorURL: o.RekorURL,
+			}
+
+			ctx, cancel := context.WithTimeout(cmd.Context(), ro.Timeout)
+			defer cancel()
+
+			return bundleUpgradeCmd.Exec(ctx, args[0])
 		},
 	}
 
